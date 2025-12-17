@@ -1,4 +1,4 @@
-# 五险一金计算器
+# 五险一金计算器网站
 
 一个基于 Next.js + Tailwind CSS + Supabase 构建的企业五险一金计算工具。
 
@@ -28,7 +28,7 @@
 ### 1. 克隆项目
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/YuJie2018/SheBaoJiSuanWangZhan.git
 cd shebaojisuanwangzhan
 ```
 
