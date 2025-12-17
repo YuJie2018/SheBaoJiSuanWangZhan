@@ -4,8 +4,8 @@ import { useState, useRef } from 'react';
 
 interface UploadButtonProps {
   endpoint: string;
-  onSuccess: () => void;
-  onError: (error: string) => void;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
   label: string;
 }
 
@@ -24,12 +24,12 @@ export default function UploadButton({
 
     // 验证文件类型
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      onError('请选择 Excel 文件（.xlsx 或 .xls）');
+      if (onError) onError('请选择 Excel 文件（.xlsx 或 .xls）');
       return;
     }
 
     setIsUploading(true);
-    onError(''); // 清空错误
+    if (onError) onError(''); // 清空错误
 
     try {
       const formData = new FormData();
@@ -46,11 +46,11 @@ export default function UploadButton({
         throw new Error(result.error || '上传失败');
       }
 
-      onSuccess();
+      if (onSuccess) onSuccess();
       alert(result.message);
 
     } catch (err) {
-      onError(err instanceof Error ? err.message : '上传失败');
+      if (onError) onError(err instanceof Error ? err.message : '上传失败');
     } finally {
       setIsUploading(false);
       // 重置文件选择器
