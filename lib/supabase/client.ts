@@ -1,10 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
+import { getEnvConfig } from '../env';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const envConfig = getEnvConfig();
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('缺少 Supabase 环境变量。请检查 .env.local 文件');
+export const supabase = envConfig.supabaseUrl && envConfig.supabaseAnonKey
+  ? createClient(envConfig.supabaseUrl, envConfig.supabaseAnonKey)
+  : null;
+
+export function isSupabaseConfigured(): boolean {
+  return envConfig.isConfigured && supabase !== null;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export function getSupabaseClient() {
+  if (!isSupabaseConfigured()) {
+    console.warn('Supabase client is not configured. Some features may not work.');
+    return null;
+  }
+  return supabase;
+}

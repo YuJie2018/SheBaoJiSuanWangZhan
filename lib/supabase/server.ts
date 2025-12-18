@@ -1,17 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import { getEnvConfig } from '../env';
+
+const envConfig = getEnvConfig();
 
 export function createServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('缺少 Supabase 环境变量。请检查 .env.local 文件');
+  if (!envConfig.isConfigured) {
+    console.warn('Supabase server client is not configured. Some features may not work.');
+    return null;
   }
 
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  return createClient(envConfig.supabaseUrl!, envConfig.supabaseServiceKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
+}
+
+export function isServerSupabaseConfigured(): boolean {
+  return envConfig.isConfigured &&
+         !!envConfig.supabaseUrl &&
+         !!envConfig.supabaseServiceKey;
 }

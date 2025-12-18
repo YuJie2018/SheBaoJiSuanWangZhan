@@ -200,9 +200,87 @@ npm run lint     # 运行 ESLint
 
 ### Vercel (推荐)
 
-1. 连接 GitHub 仓库到 Vercel
-2. 设置环境变量
-3. 自动部署
+#### 1. 连接 GitHub 仓库
+1. 访问 [Vercel](https://vercel.com)
+2. 点击 "New Project"
+3. 导入 GitHub 仓库：`https://github.com/YuJie2018/SheBaoJiSuanWangZhan.git`
+4. 选择 Next.js 框架（Vercel 会自动检测）
+
+#### 2. 设置环境变量
+在 Vercel 项目设置中添加以下环境变量：
+
+```
+NEXT_PUBLIC_SUPABASE_URL=你的 Supabase 项目 URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=你的 Supabase 匿名密钥
+SUPABASE_SERVICE_ROLE_KEY=你的 Supabase 服务角色密钥
+```
+
+**获取环境变量值：**
+1. 在 Supabase Dashboard 中，进入 Settings → API
+2. 复制 Project URL 作为 `NEXT_PUBLIC_SUPABASE_URL`
+3. 复制 public API key 作为 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. 复制 service_role key 作为 `SUPABASE_SERVICE_ROLE_KEY`
+
+#### 3. 部署验证
+1. 点击 "Deploy" 开始部署
+2. 部署完成后访问提供的 URL
+3. 如果看到配置提示，说明环境变量未正确设置，请检查环境变量配置
+
+#### 4. 配置 Supabase 数据库
+如果这是首次部署，需要在 Supabase 中创建数据库表：
+
+1. 进入 Supabase Dashboard → SQL Editor
+2. 运行以下 SQL 脚本：
+
+```sql
+-- 创建 cities 表
+CREATE TABLE cities (
+  id BIGSERIAL PRIMARY KEY,
+  city_name TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  rate DECIMAL(5, 4) NOT NULL,
+  base_min DECIMAL(10, 2) NOT NULL,
+  base_max DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建 salaries 表
+CREATE TABLE salaries (
+  id BIGSERIAL PRIMARY KEY,
+  employee_id TEXT NOT NULL,
+  employee_name TEXT NOT NULL,
+  month INTEGER NOT NULL,
+  salary_amount DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建 results 表
+CREATE TABLE results (
+  id BIGSERIAL PRIMARY KEY,
+  employee_id TEXT NOT NULL,
+  employee_name TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  avg_salary DECIMAL(10, 2) NOT NULL,
+  contribution_base DECIMAL(10, 2) NOT NULL,
+  company_amount DECIMAL(10, 2) NOT NULL,
+  city_name TEXT NOT NULL,
+  rate DECIMAL(5, 4) NOT NULL,
+  base_min DECIMAL(10, 2) NOT NULL,
+  base_max DECIMAL(10, 2) NOT NULL,
+  calculated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(employee_id, year)
+);
+
+-- 创建索引
+CREATE INDEX idx_salaries_employee ON salaries(employee_id);
+CREATE INDEX idx_salaries_month ON salaries(month);
+CREATE INDEX idx_results_employee ON results(employee_id);
+CREATE INDEX idx_cities_year ON cities(year);
+
+-- 插入示例城市数据
+INSERT INTO cities (city_name, year, rate, base_min, base_max) VALUES
+('佛山', 2024, 0.14, 4546, 26421);
+```
 
 ### 其他平台
 
@@ -210,6 +288,24 @@ npm run lint     # 运行 ESLint
 npm run build
 npm run start
 ```
+
+### 环境变量配置故障排除
+
+如果应用显示配置错误提示，请检查：
+
+1. **环境变量名称**：确保拼写完全正确
+2. **环境变量值**：确保没有多余的空格或换行符
+3. **Vercel 重新部署**：修改环境变量后需要触发重新部署
+4. **Supabase 项目状态**：确保 Supabase 项目处于活跃状态
+
+### 部署后的配置验证
+
+部署完成后，访问应用并检查：
+
+1. ✅ 应用正常加载，不显示配置错误
+2. ✅ 能够访问数据上传页面
+3. ✅ 能够上传 Excel 文件（使用提供的示例文件）
+4. ✅ 能够执行计算并查看结果
 
 ## 注意事项
 

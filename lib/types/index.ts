@@ -38,4 +38,6 @@ export interface ApiResponse<T = any> {
   error?: string;
   message?: string;
   count?: number;
+  requiresSetup?: boolean;
+  missingVars?: string[];
 }

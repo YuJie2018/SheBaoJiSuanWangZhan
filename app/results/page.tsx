@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ResultsTable from '@/components/ResultsTable';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Result } from '@/lib/types';
+import ConfigurationStatus from '@/components/ConfigurationStatus';
+import { Result, ApiResponse } from '@/lib/types';
 
 export default function ResultsPage() {
   const router = useRouter();
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requiresSetup, setRequiresSetup] = useState(false);
+  const [missingVars, setMissingVars] = useState<string[]>([]);
 
   useEffect(() => {
     fetchResults();
@@ -20,13 +23,20 @@ export default function ResultsPage() {
   const fetchResults = async () => {
     try {
       const response = await fetch('/api/results');
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || '获取结果失败');
+        if (data.requiresSetup) {
+          setRequiresSetup(true);
+          setMissingVars(data.missingVars || []);
+          setError(null);
+        } else {
+          setError(data.error || '获取结果失败');
+        }
+        return;
       }
 
-      setResults(data.data);
+      setResults(data.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');
     } finally {
@@ -40,6 +50,20 @@ export default function ResultsPage() {
         <div className="text-center">
           <LoadingSpinner />
           <p className="mt-4 text-gray-600">正在加载计算结果...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requiresSetup) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">计算结果</h1>
+            <p className="mt-2 text-gray-600">查看员工的五险一金计算结果</p>
+          </div>
+          <ConfigurationStatus />
         </div>
       </div>
     );

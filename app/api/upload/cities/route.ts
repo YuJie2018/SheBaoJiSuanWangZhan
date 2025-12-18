@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseExcelFile } from '@/lib/excel/parser';
 import { createServerClient } from '@/lib/supabase/server';
+import { getEnvConfig } from '@/lib/env';
 import { ApiResponse } from '@/lib/types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(request: NextRequest) {
   try {
+    // 检查环境变量配置
+    const envConfig = getEnvConfig();
+    if (!envConfig.isConfigured) {
+      return NextResponse.json({
+        success: false,
+        error: 'Database not configured',
+        requiresSetup: true,
+        missingVars: envConfig.missingVars,
+      } as ApiResponse, { status: 503 });
+    }
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -45,6 +56,13 @@ export async function POST(request: NextRequest) {
 
     // 插入数据库
     const supabase = createServerClient();
+    if (!supabase) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to create database client',
+        requiresSetup: true,
+      } as ApiResponse, { status: 503 });
+    }
 
     // 先清空表
     const { error: deleteError } = await supabase

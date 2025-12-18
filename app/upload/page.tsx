@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import UploadCard, { CardStatus } from '@/components/UploadCard';
 import ProgressIndicator, { StepStatus } from '@/components/ProgressIndicator';
+import ConfigurationStatus from '@/components/ConfigurationStatus';
+import { getEnvConfig } from '@/lib/env';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -14,6 +16,12 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [citiesStatus, setCitiesStatus] = useState<CardStatus>('pending');
   const [salariesStatus, setSalariesStatus] = useState<CardStatus>('pending');
+  const [isConfigured, setIsConfigured] = useState(true);
+
+  useEffect(() => {
+    const envConfig = getEnvConfig();
+    setIsConfigured(envConfig.isConfigured);
+  }, []);
 
   const handleCalculate = async () => {
     if (!citiesUploaded || !salariesUploaded) {
@@ -110,6 +118,13 @@ export default function UploadPage() {
             上传城市标准和员工工资数据，自动计算五险一金缴费金额
           </p>
         </div>
+
+        {/* 配置状态提示 */}
+        {!isConfigured && (
+          <div className="mb-8">
+            <ConfigurationStatus showSetupGuide={true} />
+          </div>
+        )}
 
         {/* 进度指示器 */}
         <div className="mb-12">
